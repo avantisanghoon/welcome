@@ -1,0 +1,139 @@
+용어정리
+표 = TABLE
+X축 = ROW(MYsql), RECORD, 행
+Y축 = column, 열
+
+
+>mysql -uroot
+(루트의 권한으로 접속을 하겠다)
+
+데이터베이스(스키마) 만들기
+mysql> CREATE DATABASE menagerie(데이터베이스 이름)
+;
+
+생성한 데이터베이스 찾아보기
+mysql> SHOW DATABASES;
+
+데이터베이스 선택 및 사용
+mysql> USE 데이터베이스이름;
+
+테이블 만들기
+mysql> CREATE TABLE topic(
+     -> id INT(11) NOT NULL AUTO_INCREMENT,
+	  (column = id 정수형 / 무조건 입력 / 숫자 하나씩 자동으로 증가)
+	 -> title VARCHAR(100) NOT NULL,
+	          (문자,숫자혼합/크기 및 길이)
+	 -> description TEXT NULL,
+	                     (입력 안해도 괜찮음)
+	 -> created DATETIME NOT NULL,
+	            (날짜와 시간 함께)
+	 -> author VARCHAR(30) NULL,
+	 -> profile VARCHAR(100) NULL,
+	 -> PRIMARY KEY(id));
+	     (id column을 중심키로 하여 중복되지 않게 고유하게, 기준점으로 설정한다.)
+		 
+		 
+mysql> DESCRIBE 테이블이름;
+        만든 테이블의 세부내용들을 볼 수 있다.
+		
+테이블에 내용 삽입하기(row 에 내용 삽입하기)
+
+mysql> INSERTO INTO 테이블이름(colum1, colum2, colum3, colum4) VALUES('value1','value2','value3','value4');
+ex)
+mysql> INSERT INTO topic(title,description,created,author,profile) VALUES('MongoDB','MongoDB is...',NOW(),'egoing','developer');
+
+테이블의 내용 보기 / 읽기 (가장 많이 사용. 꼭 기억할것)
+
+mysql> SELECT * FROM topic;
+	  
+테이블에서 원하는 항목만 출력하여 보기/읽기
+mysql> SELECT 원하는 colum명 FROM 테이블 명;
+EX)
+mysql> SELECT id,title,created,author FROM topic;
+
+테이블에서 원하는 값만 출력하여 보기/읽기
+mysql> SELECT 원하는 colum명 FROM 테이블 명 WHERE 조건;
+ex)
+mysql> SELECT id,title,created,author FROM topic WHERE author='egoing';
+
+테이블에서 원하는 값을 기준값으로 정하고 그에따라 오름차순/내림차순 하여 출력하기(일기/보기)
+mysql> SELECT id,title,created,author from topic WHERE author='egoing' ORDER BY id DESC;
+id 값을 기준으로 하여 그 값을 기준으로 내림차순
+
+데이터가 많을때는 가져올 수의 최대치를 설정한다.
+mysql> SELECT id,title,created,author from topic WHERE author='egoing' ORDER BY id DESC LIMIT 2;
+
+* SELECT 는 중요하다. 얼마나 내가 원하는 조건으로 원하는 데이터를 받고 볼 수 있는지. DB 를 잘 다룬다는 이야기는 SELECT를 잘 다룬다는 말과 같다.
+https://dev.mysql.com/doc/refman/8.0/en/select.html
+
+UPDATE (테이블의 내용을 수정)
+https://dev.mysql.com/doc/refman/8.0/en/update.html
+
+UPDATE [LOW_PRIORITY] [IGNORE] table_reference
+    SET assignment_list
+    [WHERE where_condition]
+    [ORDER BY ...]
+    [LIMIT row_count]
+
+value:
+    {expr | DEFAULT}
+
+assignment:
+    col_name = value
+
+assignment_list:
+    assignment [, assignment] ...
+
+EX)
+mysql> UPDATE topic SET description='oracle is~~~', title='Oracle' WHERE id=2;
+(topic 테이블에서 id 2번의, description='oracle is~~~' 로 바꾸고, title='Oracle' 로 바꾼다.)
+* WHERE 문을 빠트리면 큰 재앙이 올 수도 있다. 데이터가 많을 경우 WHERE을 빼먹으면 모든 데이터가 다 수정되기 때문에 정말정말 조심하고, WHERE을 사용하여 조건을 꼭 걸어준다.
+
+데이터, 행 삭제
+Delete
+https://dev.mysql.com/doc/refman/8.0/en/delete.html
+
+
+DELETE [LOW_PRIORITY] [QUICK] [IGNORE] FROM tbl_name [[AS] tbl_alias]
+    [PARTITION (partition_name [, partition_name] ...)]
+    [WHERE where_condition]
+    [ORDER BY ...]
+    [LIMIT row_count] 
+	
+EX)
+mysql> DELETE FROM topic WHERE id=5;
+(topic 테이블에서  id 5번의 행을 삭제)
+* WHERE를 꼭 사용하자.
+
+관계형 데이터베이스
+(하나의 테이블을 수정하면 연관된 다른 테이블도 함께 영향을 받는다)
+
+JOIN
+mysql> SELECT * FROM topic LEFT JOIN author ON topic.author_id = author.id;
+(author_id 값과 topic.author_id 가 서로 같은것 끼리 조인 시켜라. 묶어라)
+
++----+------------+-------------------+---------------------+-----------+------+--------+---------------------------+
+| id | title      | description       | created             | author_id | id   | name   | profile                   |
++----+------------+-------------------+---------------------+-----------+------+--------+---------------------------+
+|  1 | MySQL      | MySQL is...       | 2018-01-01 12:10:11 |         1 |    1 | egoing | developer                 |
+|  2 | Oracle     | Oracle is ...     | 2018-01-03 13:01:10 |         1 |    1 | egoing | developer                 |
+|  3 | SQL Server | SQL Server is ... | 2018-01-20 11:01:10 |         2 |    2 | duru   | database administrator    |
+|  4 | PostgreSQL | PostgreSQL is ... | 2018-01-23 01:03:03 |         3 |    3 | taeho  | data scientist, developer |
+|  5 | MongoDB    | MongoDB is ...    | 2018-01-30 12:31:03 |         1 |    1 | egoing | developer                 |
++----+------------+-------------------+---------------------+-----------+------+--------+---------------------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT topic.id,title,description,created,name,profile FROM topic LEFT JOIN author ON topic.author_id = author.id;
++----+------------+-------------------+---------------------+--------+---------------------------+
+| id | title      | description       | created             | name   | profile                   |
++----+------------+-------------------+---------------------+--------+---------------------------+
+|  1 | MySQL      | MySQL is...       | 2018-01-01 12:10:11 | egoing | developer                 |
+|  2 | Oracle     | Oracle is ...     | 2018-01-03 13:01:10 | egoing | developer                 |
+|  3 | SQL Server | SQL Server is ... | 2018-01-20 11:01:10 | duru   | database administrator    |
+|  4 | PostgreSQL | PostgreSQL is ... | 2018-01-23 01:03:03 | taeho  | data scientist, developer |
+|  5 | MongoDB    | MongoDB is ...    | 2018-01-30 12:31:03 | egoing | developer                 |
++----+------------+-------------------+---------------------+--------+---------------------------+
+5 rows in set (0.00 sec)
+(author_id 와 id 는 표시하지 않게 하기)
+
+
